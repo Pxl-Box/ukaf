@@ -163,6 +163,18 @@ export const loginSchema = z.object({
   next: z.string().optional(),
 });
 
+export const verifyOtpSchema = z.object({
+  mfaToken: z.string().min(10, 'This sign-in attempt has expired. Please sign in again.'),
+  code: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, 'Enter the 6-digit code from your email.'),
+});
+
+export const resendOtpSchema = z.object({
+  mfaToken: z.string().min(10, 'This sign-in attempt has expired. Please sign in again.'),
+});
+
 export const forgotPasswordSchema = z.object({
   email: emailSchema,
   website: honeypotSchema,
@@ -566,6 +578,7 @@ export const adminUpdateUserSchema = z.object({
   companyName: optionalText(120),
   vatNumber: optionalText(32),
   notes: optionalText(2000),
+  mfaEnabled: booleanFromInput.optional(),
 });
 
 export const currencySchema = z.object({

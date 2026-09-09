@@ -36,6 +36,7 @@ enum TokenType {
   PASSWORD_RESET
   STAFF_INVITE
   EMAIL_CHANGE
+  MFA_LOGIN
 }
 
 enum AddressType {
@@ -226,6 +227,11 @@ model User {
   lockedUntil      DateTime?
   lastLoginAt      DateTime?
   lastLoginIp      String?
+
+  /// Email one-time-passcode required as a second factor at login.
+  /// Off by default — an admin opts individual staff accounts in from
+  /// /admin/users. The seeded dev sales account is deliberately left off.
+  mfaEnabled Boolean @default(false)
 
   notes     String?
   createdAt DateTime  @default(now())

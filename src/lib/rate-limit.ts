@@ -19,6 +19,7 @@ export type RateLimitRule = {
 
 export const RATE_LIMITS = {
   login: { limit: 8, windowSeconds: 15 * 60 },
+  mfaVerify: { limit: 8, windowSeconds: 15 * 60 },
   register: { limit: 5, windowSeconds: 60 * 60 },
   passwordReset: { limit: 5, windowSeconds: 60 * 60 },
   enquiry: { limit: 10, windowSeconds: 60 * 60 },

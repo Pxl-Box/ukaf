@@ -4,7 +4,7 @@ import { requireRole, ROLE_LABELS } from '@/lib/auth';
 import { formatDateTime, relativeTime } from '@/lib/utils';
 import { Badge } from '@/components/ui/primitives';
 import { AdminCard, AdminHeader, EmptyRow, TableWrap, Td, Th } from '@/components/admin/shell';
-import { UserManager } from './UserManager';
+import { UserManager, UserRowActions } from './UserManager';
 
 export const metadata: Metadata = {
   title: 'Users & roles',
@@ -39,6 +39,7 @@ export default async function AdminUsersPage() {
       lockedUntil: true,
       createdAt: true,
       emailVerifiedAt: true,
+      mfaEnabled: true,
       _count: { select: { assignedLeads: true } },
     },
   });
@@ -91,12 +92,13 @@ export default async function AdminUsersPage() {
               <Th align="center">Open leads</Th>
               <Th>Last sign-in</Th>
               <Th>Status</Th>
+              <Th align="center">MFA</Th>
               <Th align="right">Actions</Th>
             </tr>
           </thead>
           <tbody>
             {staff.length === 0 ? (
-              <EmptyRow colSpan={7} message="No staff accounts yet." />
+              <EmptyRow colSpan={8} message="No staff accounts yet." />
             ) : (
               staff.map((member) => {
                 const locked = member.lockedUntil && member.lockedUntil > new Date();
@@ -140,8 +142,15 @@ export default async function AdminUsersPage() {
                         <Badge tone="neutral">{member.status.toLowerCase()}</Badge>
                       )}
                     </Td>
+                    <Td align="center">
+                      {member.mfaEnabled ? (
+                        <Badge tone="success">On</Badge>
+                      ) : (
+                        <Badge tone="neutral">Off</Badge>
+                      )}
+                    </Td>
                     <Td align="right">
-                      <UserManager.RowActions
+                      <UserRowActions
                         user={{
                           id: member.id,
                           email: member.email,
@@ -149,6 +158,7 @@ export default async function AdminUsersPage() {
                           lastName: member.lastName,
                           role: member.role,
                           status: member.status,
+                          mfaEnabled: member.mfaEnabled,
                         }}
                         currentUserId={actor.id}
                         currentRole={actor.role}

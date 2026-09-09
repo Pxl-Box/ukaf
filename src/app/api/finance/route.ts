@@ -73,8 +73,8 @@ export const POST = handler(async (request: Request) => {
   const lead = await createLead({
     firstName: input.firstName,
     lastName: input.lastName,
-    email: input.email,
-    phone: input.phone || null,
+    phone: input.phone,
+    email: input.email || null,
     company: input.company || null,
     subject: `Finance enquiry ${application.ref}`,
     message:
@@ -95,8 +95,8 @@ export const POST = handler(async (request: Request) => {
     sendInternalLeadNotification({
       ref: application.ref,
       name: `${input.firstName} ${input.lastName}`,
-      email: input.email,
-      phone: input.phone || null,
+      phone: input.phone,
+      email: input.email || null,
       company: input.company || null,
       message: `Finance: ${input.termMonths} months, deposit ${(input.depositNet / 100).toFixed(2)}, est. ${(estimatedMonthly / 100).toFixed(2)}/month`,
       vehicleTitle: truck?.title ?? null,

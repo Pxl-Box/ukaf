@@ -150,12 +150,20 @@ export function UserManager({ currentRole }: { currentRole: Role }) {
   );
 }
 
-UserManager.RowActions = function RowActions({
+export function UserRowActions({
   user,
   currentUserId,
   currentRole,
 }: {
-  user: { id: string; email: string; firstName: string; lastName: string; role: Role; status: string };
+  user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: Role;
+    status: string;
+    mfaEnabled: boolean;
+  };
   currentUserId: string;
   currentRole: Role;
 }) {
@@ -203,6 +211,14 @@ UserManager.RowActions = function RowActions({
         </select>
 
         <div className="flex gap-1">
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => update({ mfaEnabled: !user.mfaEnabled })}
+            className="btn-ghost btn-sm"
+          >
+            {user.mfaEnabled ? 'Turn off MFA' : 'Require MFA'}
+          </button>
           {user.status === 'SUSPENDED' ? (
             <button
               type="button"

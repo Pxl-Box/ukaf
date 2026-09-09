@@ -19,7 +19,7 @@ npm run db:seed               # reference data + demo stock
 npm run dev
 ```
 
-Then open http://localhost:3000 and sign in at `/login`:
+Then open http://localhost:3002 and sign in at `/login`:
 
 | Role  | Email                | Password        |
 | ----- | -------------------- | --------------- |
@@ -27,6 +27,12 @@ Then open http://localhost:3000 and sign in at `/login`:
 | Sales | `sales@ukaf.co.uk`   | `ChangeMe!2024` |
 
 **Change both passwords before this touches a real network.**
+
+The seeded sales account is meant for local testing, so it's excluded from
+email MFA by default. Sign in as the Owner, promote/manage other staff at
+`/admin/users`, and turn on "Require MFA" there per account once real staff
+are using the system — it sends a 6-digit code by email as a second factor at
+login.
 
 > Prisma's CLI reads `.env`, and Next.js reads `.env` too, so keep everything in
 > one `.env` file locally rather than splitting across `.env.local`.
@@ -65,12 +71,42 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ### Stripe webhooks in development
 
 ```bash
-stripe listen --forward-to localhost:3000/api/stripe/webhook
+stripe listen --forward-to localhost:3002/api/stripe/webhook
 ```
 
 Copy the printed `whsec_…` into `STRIPE_WEBHOOK_SECRET`. Payment is only
 reconciled by the webhook, never by the browser returning from Stripe — so a
 customer closing the tab mid-payment still gets a correct order.
+
+---
+
+## Deploying to Proxmox VE
+
+`deploy/proxmox-install.sh` provisions a fresh LXC container (Debian 12, Node 20,
+PostgreSQL), clones this repo, builds it and installs it as a systemd service —
+plus a second service that listens for GitHub push webhooks and redeploys
+automatically (`git pull` → `npm ci` → `prisma migrate deploy` → `npm run build`
+→ restart), so pushing to `main` is enough to ship a change.
+
+Run it **on the Proxmox host shell**, with `deploy/lxc-setup.sh` in the same
+directory (both files are needed):
+
+```bash
+git clone <your-fork-url> ukaf-deploy
+cd ukaf-deploy
+bash deploy/proxmox-install.sh
+```
+
+It will interactively ask for the container size, network, your repo URL/branch
+and the app port, then print the app URL, a webhook URL and a secret. Add that
+webhook URL + secret under the GitHub repo's **Settings → Webhooks** (content
+type `application/json`, just the `push` event) — pushes to the configured
+branch now deploy themselves. Put the container behind Cloudflare (or your own
+reverse proxy) for a real domain and TLS; the installer only sets up plain HTTP
+inside your network.
+
+After the first install, edit `/home/ukaf/app/.env` inside the container for
+real Stripe/Resend keys, then `systemctl restart ukaf`.
 
 ---
 

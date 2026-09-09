@@ -14,6 +14,15 @@ export function generateToken(bytes = 32): string {
   return randomBytes(bytes).toString('base64url');
 }
 
+/** 6-digit numeric code for email OTP/MFA — rejection sampled to avoid modulo bias. */
+export function generateOtpCode(): string {
+  let value: number;
+  do {
+    value = randomBytes(4).readUInt32BE(0);
+  } while (value >= 4_000_000_000);
+  return String(value % 1_000_000).padStart(6, '0');
+}
+
 /** Keyed digest used for anything stored in the database. */
 export function hashToken(token: string): string {
   return createHmac('sha256', env.authSecret).update(token).digest('hex');

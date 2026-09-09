@@ -207,6 +207,24 @@ export async function sendVerificationEmail(to: string, firstName: string, token
   });
 }
 
+export async function sendMfaOtpEmail(to: string, firstName: string, code: string) {
+  return sendEmail({
+    to,
+    template: 'mfa-otp',
+    subject: `${code} is your UKAF sign-in code`,
+    html: emailLayout({
+      heading: 'Your sign-in code',
+      preheader: `Your one-time code is ${code}.`,
+      body:
+        p(`Hi ${escapeHtml(firstName)},`) +
+        p('Enter this code to finish signing in to your UKAF admin account:') +
+        `<p style="margin:0 0 14px;font-size:32px;font-weight:700;letter-spacing:8px;color:#0f172a;">${escapeHtml(code)}</p>` +
+        p('This code expires in 10 minutes and can only be used once.'),
+      footerNote: 'If you did not try to sign in, you can ignore this email — your account is still secure.',
+    }),
+  });
+}
+
 export async function sendPasswordResetEmail(to: string, firstName: string, token: string) {
   const url = `${env.siteUrl}/reset-password?token=${encodeURIComponent(token)}`;
   return sendEmail({

@@ -2,11 +2,15 @@ import { prisma } from '@/lib/db';
 import { clientIp, fail, guard, handler, ok, parseJson } from '@/lib/api';
 import { loginSchema } from '@/lib/validation';
 import { hashPassword, needsRehash, verifyPassword } from '@/lib/password';
-import { createSession, getRequestContext } from '@/lib/auth';
+import { createMfaChallenge, createSession, getRequestContext } from '@/lib/auth';
 import { recordAudit } from '@/lib/audit';
 import { mergeGuestCart } from '@/lib/cart';
 import { clearRateLimit } from '@/lib/rate-limit';
 import { safeRedirectPath } from '@/lib/utils';
+import { generateOtpCode, hashToken } from '@/lib/tokens';
+import { sendMfaOtpEmail } from '@/lib/email';
+
+const OTP_TTL_MS = 10 * 60 * 1000;
 
 /** Progressive lockout after repeated failures on the same account. */
 const LOCKOUT_THRESHOLD = 10;
@@ -43,6 +47,7 @@ export const POST = handler(async (request: Request) => {
       failedLoginCount: true,
       lockedUntil: true,
       emailVerifiedAt: true,
+      mfaEnabled: true,
     },
   });
 
@@ -115,9 +120,41 @@ export const POST = handler(async (request: Request) => {
     },
   });
 
+  await Promise.all([clearRateLimit('login', ip), clearRateLimit('login', `account:${input.email}`)]);
+
+  const isStaff = ['SALES', 'MANAGER', 'ADMIN', 'SUPERADMIN'].includes(user.role);
+  const redirectTo = safeRedirectPath(input.next, isStaff ? '/admin' : '/account');
+
+  if (user.mfaEnabled) {
+    const code = generateOtpCode();
+    await prisma.verificationToken.create({
+      data: {
+        userId: user.id,
+        type: 'MFA_LOGIN',
+        tokenHash: hashToken(code),
+        expiresAt: new Date(Date.now() + OTP_TTL_MS),
+      },
+    });
+    await sendMfaOtpEmail(user.email, user.firstName, code);
+
+    await recordAudit({
+      action: 'auth.mfa_challenge',
+      actor: { id: user.id, email: user.email },
+      entity: 'User',
+      entityId: user.id,
+      summary: 'Password verified — MFA code sent',
+    });
+
+    return ok({
+      mfaRequired: true,
+      mfaToken: createMfaChallenge(user.id),
+      redirectTo,
+      maskedEmail: maskEmail(user.email),
+    });
+  }
+
   await createSession(user.id, context);
   await mergeGuestCart(user.id).catch(() => undefined);
-  await Promise.all([clearRateLimit('login', ip), clearRateLimit('login', `account:${input.email}`)]);
 
   await recordAudit({
     action: 'auth.login',
@@ -127,9 +164,6 @@ export const POST = handler(async (request: Request) => {
     summary: 'Signed in',
   });
 
-  const isStaff = ['SALES', 'MANAGER', 'ADMIN', 'SUPERADMIN'].includes(user.role);
-  const redirectTo = safeRedirectPath(input.next, isStaff ? '/admin' : '/account');
-
   return ok({
     signedIn: true,
     redirectTo,
@@ -137,3 +171,11 @@ export const POST = handler(async (request: Request) => {
     firstName: user.firstName,
   });
 });
+
+/** obscures a mailbox for display: "da**@example.com" */
+function maskEmail(email: string): string {
+  const [local, domain] = email.split('@');
+  if (!domain) return email;
+  const visible = local.slice(0, 2);
+  return `${visible}${'*'.repeat(Math.max(2, local.length - visible.length))}@${domain}`;
+}

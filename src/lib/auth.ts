@@ -3,7 +3,7 @@ import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import type { Role, User } from '@prisma/client';
 import { prisma } from './db';
-import { generateToken, hashToken } from './tokens';
+import { generateToken, hashToken, signValue, verifySignedValue } from './tokens';
 import { isProduction } from './env';
 
 export const SESSION_COOKIE = '__Host-ukaf_session';
@@ -133,6 +133,25 @@ export const getSession = cache(async (): Promise<{ user: SessionUser; sessionId
 
   return { user: session.user, sessionId: session.id };
 });
+
+/** Signs a short-lived challenge identifying which user an MFA code belongs to. */
+export function createMfaChallenge(userId: string): string {
+  const payload = JSON.stringify({ uid: userId, exp: Date.now() + 10 * 60 * 1000 });
+  return signValue(payload, 'mfa-login');
+}
+
+/** Resolves a challenge back to its user id, or null if invalid/expired. */
+export function readMfaChallenge(mfaToken: string): string | null {
+  const payload = verifySignedValue(mfaToken, 'mfa-login');
+  if (!payload) return null;
+  try {
+    const { uid, exp } = JSON.parse(payload) as { uid: string; exp: number };
+    if (typeof uid !== 'string' || typeof exp !== 'number' || exp < Date.now()) return null;
+    return uid;
+  } catch {
+    return null;
+  }
+}
 
 export async function getCurrentUser(): Promise<SessionUser | null> {
   const session = await getSession();

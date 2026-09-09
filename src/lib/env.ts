@@ -35,7 +35,7 @@ const DEV_SECRET = 'dev-only-insecure-secret-do-not-use-in-production-0000000000
 export const env = {
   databaseUrl: requireInProduction('DATABASE_URL'),
 
-  siteUrl: (read('NEXT_PUBLIC_SITE_URL') ?? 'http://localhost:3000').replace(/\/$/, ''),
+  siteUrl: (read('NEXT_PUBLIC_SITE_URL') ?? 'http://localhost:3002').replace(/\/$/, ''),
 
   authSecret: requireInProduction('AUTH_SECRET', DEV_SECRET),
 

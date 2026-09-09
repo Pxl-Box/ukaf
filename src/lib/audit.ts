@@ -13,6 +13,7 @@ import type { Prisma } from '@prisma/client';
 export type AuditAction =
   | 'auth.login'
   | 'auth.login_failed'
+  | 'auth.mfa_challenge'
   | 'auth.logout'
   | 'auth.register'
   | 'auth.password_reset_requested'

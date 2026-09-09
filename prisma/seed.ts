@@ -140,6 +140,10 @@ async function main() {
     update: { role: 'SUPERADMIN', status: 'ACTIVE' },
   });
 
+  // Default sales account for dev/testing — use this to sign in and then
+  // promote/convert other accounts from /admin/users. MFA is deliberately
+  // left off here (see mfaEnabled default) so it stays quick to use locally;
+  // turn it on for real staff accounts once they're created.
   const salesRep = await prisma.user.upsert({
     where: { email: 'sales@ukaf.co.uk' },
     create: {
@@ -151,8 +155,9 @@ async function main() {
       status: 'ACTIVE',
       emailVerifiedAt: new Date(),
       phone: '+44 161 000 0001',
+      mfaEnabled: false,
     },
-    update: { role: 'SALES', status: 'ACTIVE' },
+    update: { role: 'SALES', status: 'ACTIVE', mfaEnabled: false },
   });
 
   console.log(`  Users:       2 (${adminEmail}, sales@ukaf.co.uk)`);

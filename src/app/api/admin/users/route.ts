@@ -118,6 +118,7 @@ export const PATCH = handler(async (request: Request) => {
       companyName: true,
       vatNumber: true,
       notes: true,
+      mfaEnabled: true,
     },
   });
   if (!existing) return notFound('User');
@@ -150,10 +151,11 @@ export const PATCH = handler(async (request: Request) => {
       ...(input.companyName !== undefined ? { companyName: input.companyName || null } : {}),
       ...(input.vatNumber !== undefined ? { vatNumber: input.vatNumber || null } : {}),
       ...(input.notes !== undefined ? { notes: input.notes || null } : {}),
+      ...(input.mfaEnabled !== undefined ? { mfaEnabled: input.mfaEnabled } : {}),
       // Unlock a user who had tripped the brute-force lockout.
       ...(input.status === 'ACTIVE' ? { failedLoginCount: 0, lockedUntil: null } : {}),
     },
-    select: { id: true, email: true, role: true, status: true, firstName: true, lastName: true },
+    select: { id: true, email: true, role: true, status: true, firstName: true, lastName: true, mfaEnabled: true },
   });
 
   // Suspension must take effect immediately, not at session expiry.

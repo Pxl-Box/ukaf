@@ -1,0 +1,1094 @@
+// UKAF — HGV & commercial vehicle sales platform
+// PostgreSQL schema. All money is stored as integer minor units (e.g. pence)
+// in the platform BASE currency unless the record carries its own currency
+// column, in which case amounts are denominated in that currency.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  CUSTOMER
+  SALES
+  MANAGER
+  ADMIN
+  SUPERADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  PENDING
+  SUSPENDED
+  DELETED
+}
+
+enum TokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+  STAFF_INVITE
+  EMAIL_CHANGE
+}
+
+enum AddressType {
+  BILLING
+  DELIVERY
+}
+
+enum VehicleCondition {
+  NEW
+  USED
+  EX_DEMO
+}
+
+enum FuelType {
+  DIESEL
+  ELECTRIC
+  HYDROGEN
+  CNG
+  LNG
+  HYBRID
+  PETROL
+}
+
+enum Transmission {
+  MANUAL
+  AUTOMATIC
+  SEMI_AUTOMATIC
+}
+
+enum EmissionStandard {
+  EURO_3
+  EURO_4
+  EURO_5
+  EURO_6
+  ZERO_EMISSION
+}
+
+enum StockStatus {
+  DRAFT
+  AVAILABLE
+  RESERVED
+  SOLD
+  ARCHIVED
+}
+
+enum VatTreatment {
+  PLUS_VAT
+  VAT_QUALIFYING
+  MARGIN_SCHEME
+  NO_VAT
+}
+
+enum PurchaseType {
+  RESERVATION
+  FULL_PURCHASE
+}
+
+enum OrderStatus {
+  PENDING
+  AWAITING_PAYMENT
+  PAID
+  IN_PREPARATION
+  READY_FOR_COLLECTION
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  CANCELLED
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  QUOTED
+  NEGOTIATION
+  WON
+  LOST
+}
+
+enum LeadSource {
+  WEBSITE_ENQUIRY
+  VEHICLE_ENQUIRY
+  WHATSAPP
+  PHONE
+  EMAIL
+  WALK_IN
+  REFERRAL
+  MARKETPLACE
+  PART_EXCHANGE
+  FINANCE_APPLICATION
+  NEWSLETTER
+  IMPORT
+}
+
+enum ActivityType {
+  NOTE
+  CALL
+  EMAIL
+  MEETING
+  TASK
+  VIEWING
+  STATUS_CHANGE
+  SYSTEM
+}
+
+enum DocumentType {
+  SPEC_SHEET
+  MOT_CERTIFICATE
+  SERVICE_HISTORY
+  V5C
+  WARRANTY
+  INVOICE
+  OTHER
+}
+
+enum EmailStatus {
+  QUEUED
+  SENT
+  FAILED
+  BOUNCED
+}
+
+enum DiscountType {
+  FIXED
+  PERCENTAGE
+}
+
+enum SubscriberStatus {
+  PENDING
+  SUBSCRIBED
+  UNSUBSCRIBED
+  BOUNCED
+}
+
+/// The input a custom category field renders as, both in the admin listing
+/// form and (for the filterable/select-like types) on the public filter
+/// sidebar.
+enum CategoryFieldType {
+  TEXT
+  TEXTAREA
+  NUMBER
+  BOOLEAN
+  SELECT
+  MULTISELECT
+}
+
+enum FinanceStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  DECLINED
+  WITHDRAWN
+}
+
+// ---------------------------------------------------------------------------
+// Identity & access
+// ---------------------------------------------------------------------------
+
+model User {
+  id                String     @id @default(cuid())
+  email             String     @unique
+  emailVerifiedAt   DateTime?
+  passwordHash      String
+  passwordUpdatedAt DateTime   @default(now())
+  firstName         String
+  lastName          String
+  phone             String?
+  companyName       String?
+  vatNumber         String?
+  role              Role       @default(CUSTOMER)
+  status            UserStatus @default(PENDING)
+
+  preferredCurrency String  @default("GBP")
+  marketingOptIn    Boolean @default(false)
+  stripeCustomerId  String? @unique
+
+  // Brute-force protection
+  failedLoginCount Int       @default(0)
+  lockedUntil      DateTime?
+  lastLoginAt      DateTime?
+  lastLoginIp      String?
+
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  sessions            Session[]
+  tokens              VerificationToken[]
+  addresses           Address[]
+  orders              Order[]
+  savedTrucks         SavedTruck[]
+  carts               Cart[]
+  leads               Lead[]               @relation("LeadContact")
+  assignedLeads       Lead[]               @relation("LeadOwner")
+  activities          Activity[]           @relation("ActivityAuthor")
+  auditLogs           AuditLog[]
+  createdTrucks       Truck[]              @relation("TruckCreatedBy")
+  financeApplications FinanceApplication[]
+  consents            CookieConsent[]
+
+  @@index([role, status])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Session {
+  id         String    @id @default(cuid())
+  userId     String
+  tokenHash  String    @unique
+  ipAddress  String?
+  userAgent  String?
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  lastSeenAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  type      TokenType
+  tokenHash String    @unique
+  payload   String?
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@map("verification_tokens")
+}
+
+model Address {
+  id        String      @id @default(cuid())
+  userId    String
+  type      AddressType @default(BILLING)
+  isDefault Boolean     @default(false)
+  fullName  String
+  company   String?
+  line1     String
+  line2     String?
+  city      String
+  county    String?
+  postcode  String
+  country   String      @default("GB")
+  phone     String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@map("addresses")
+}
+
+// ---------------------------------------------------------------------------
+// Catalogue
+// ---------------------------------------------------------------------------
+
+model Make {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  logoUrl   String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  models VehicleModel[]
+  trucks Truck[]
+
+  @@map("makes")
+}
+
+model VehicleModel {
+  id     String @id @default(cuid())
+  makeId String
+  name   String
+  slug   String
+
+  make   Make    @relation(fields: [makeId], references: [id], onDelete: Cascade)
+  trucks Truck[]
+
+  @@unique([makeId, slug])
+  @@map("vehicle_models")
+}
+
+model Category {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  slug        String  @unique
+  description String?
+  imageUrl    String?
+  icon        String?
+  sortOrder   Int     @default(0)
+  isActive    Boolean @default(true)
+
+  trucks Truck[]
+  fields CategoryField[]
+
+  @@map("categories")
+}
+
+/// An admin-defined field belonging to one category — e.g. "Cars" might
+/// define "Number of doors" (NUMBER) and "Boot space" (NUMBER, unit "L"),
+/// while "Tractor Units" instead uses the built-in axle/weight/cab columns
+/// on Truck itself. Values are stored per-listing on `Truck.customFields`,
+/// keyed by `CategoryField.key`.
+model CategoryField {
+  id         String            @id @default(cuid())
+  categoryId String
+  /// URL/JSON-safe key, unique within the category, e.g. "bootSpaceLitres".
+  key        String
+  label      String
+  type       CategoryFieldType @default(TEXT)
+  /// Shown after the value, e.g. "kg", "bhp", "L". Cosmetic only.
+  unit       String?
+  /// Choices for SELECT / MULTISELECT.
+  options    String[]          @default([])
+  required   Boolean           @default(false)
+  /// Included in the vehicle detail page's specification table.
+  showOnDetail Boolean         @default(true)
+  /// Rendered as a filter control on the public stock listing when this
+  /// category is selected. Only meaningful for BOOLEAN, SELECT and
+  /// MULTISELECT — free-text and number fields are not filterable.
+  showInFilters Boolean        @default(false)
+  helpText   String?
+  sortOrder  Int               @default(0)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, key])
+  @@index([categoryId, sortOrder])
+  @@map("category_fields")
+}
+
+model Location {
+  id        String  @id @default(cuid())
+  name      String
+  slug      String  @unique
+  line1     String?
+  city      String
+  postcode  String?
+  country   String  @default("GB")
+  phone     String?
+  email     String?
+  latitude  Float?
+  longitude Float?
+  isActive  Boolean @default(true)
+
+  trucks Truck[]
+
+  @@map("locations")
+}
+
+model Truck {
+  id          String @id @default(cuid())
+  stockNumber String @unique
+  slug        String @unique
+  title       String
+
+  makeId     String
+  modelId    String?
+  modelName  String
+  variant    String?
+  categoryId String
+  locationId String?
+
+  year         Int
+  mileageKm    Int?
+  condition    VehicleCondition @default(USED)
+  fuelType     FuelType         @default(DIESEL)
+  transmission Transmission     @default(AUTOMATIC)
+  gears        Int?
+  emissions    EmissionStandard @default(EURO_6)
+
+  axleConfig     String?
+  cabType        String?
+  bodyLengthMm   Int?
+  wheelbaseMm    Int?
+  grossWeightKg  Int?
+  payloadKg      Int?
+  engineCc       Int?
+  powerBhp       Int?
+  colour         String?
+  previousOwners Int?
+  motExpiry      DateTime?
+  serviceHistory String?
+
+  // Restricted fields — stripped by the public serialiser in src/lib/serialize.ts
+  registration String?
+  vin          String?
+  costPriceNet Int?
+
+  // Pricing. Amounts are minor units of the base currency.
+  priceNet           Int
+  retailPriceNet     Int?
+  vatTreatment       VatTreatment @default(PLUS_VAT)
+  vatRate            Int          @default(2000) // basis points, 2000 = 20%
+  priceOnApplication Boolean      @default(false)
+  reservationFee     Int          @default(50000)
+
+  quantity Int         @default(1)
+  status   StockStatus @default(DRAFT)
+  featured Boolean     @default(false)
+
+  shortDescription String?
+  description      String?
+  features         String[] @default([])
+
+  /// Values for the selected category's admin-defined CategoryField rows,
+  /// keyed by field `key`. Shape is intentionally unenforced at the database
+  /// level — validated against the category's field definitions in the
+  /// application layer (src/lib/category-fields.ts) at write time, since the
+  /// schema itself is admin-editable and category-specific.
+  customFields Json @default("{}")
+
+  metaTitle       String?
+  metaDescription String?
+
+  viewCount   Int       @default(0)
+  publishedAt DateTime?
+  soldAt      DateTime?
+  createdById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  /// Set only by the demo-data generator (seed script / admin "example data"
+  /// toggle). Lets the two be told apart and the example listings removed
+  /// without touching anything staff created by hand.
+  isDemoData Boolean @default(false)
+
+  make      Make          @relation(fields: [makeId], references: [id])
+  model     VehicleModel? @relation(fields: [modelId], references: [id])
+  category  Category      @relation(fields: [categoryId], references: [id])
+  location  Location?     @relation(fields: [locationId], references: [id])
+  createdBy User?         @relation("TruckCreatedBy", fields: [createdById], references: [id])
+
+  images              TruckImage[]
+  documents           TruckDocument[]
+  savedBy             SavedTruck[]
+  cartItems           CartItem[]
+  orderItems          OrderItem[]
+  leads               Lead[]
+  financeApplications FinanceApplication[]
+  priceHistory        PriceHistory[]
+
+  @@index([status, publishedAt])
+  @@index([makeId, categoryId])
+  @@index([priceNet])
+  @@index([year])
+  @@index([featured, status])
+  @@index([isDemoData])
+  @@map("trucks")
+}
+
+model TruckImage {
+  id        String   @id @default(cuid())
+  truckId   String
+  url       String
+  alt       String?
+  sortOrder Int      @default(0)
+  isPrimary Boolean  @default(false)
+  width     Int?
+  height    Int?
+  createdAt DateTime @default(now())
+
+  truck Truck @relation(fields: [truckId], references: [id], onDelete: Cascade)
+
+  @@index([truckId, sortOrder])
+  @@map("truck_images")
+}
+
+model TruckDocument {
+  id        String       @id @default(cuid())
+  truckId   String
+  title     String
+  url       String
+  type      DocumentType @default(OTHER)
+  isPublic  Boolean      @default(false)
+  createdAt DateTime     @default(now())
+
+  truck Truck @relation(fields: [truckId], references: [id], onDelete: Cascade)
+
+  @@index([truckId])
+  @@map("truck_documents")
+}
+
+model PriceHistory {
+  id          String   @id @default(cuid())
+  truckId     String
+  oldPriceNet Int
+  newPriceNet Int
+  changedById String?
+  reason      String?
+  createdAt   DateTime @default(now())
+
+  truck Truck @relation(fields: [truckId], references: [id], onDelete: Cascade)
+
+  @@index([truckId, createdAt])
+  @@map("price_history")
+}
+
+// ---------------------------------------------------------------------------
+// Currency
+// ---------------------------------------------------------------------------
+
+model Currency {
+  code       String  @id // ISO 4217, e.g. GBP
+  name       String
+  symbol     String
+  // Units of this currency per 1 unit of the base currency.
+  rateToBase Decimal @db.Decimal(18, 8)
+  decimals   Int     @default(2)
+  isBase     Boolean @default(false)
+  isActive   Boolean @default(true)
+  // Rounds converted prices to a tidy value, e.g. 100 => nearest 100 minor units.
+  roundTo    Int      @default(1)
+  sortOrder  Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  history FxRateSnapshot[]
+  orders  Order[]
+
+  @@map("currencies")
+}
+
+model FxRateSnapshot {
+  id           String   @id @default(cuid())
+  currencyCode String
+  rateToBase   Decimal  @db.Decimal(18, 8)
+  source       String   @default("manual")
+  capturedAt   DateTime @default(now())
+
+  currency Currency @relation(fields: [currencyCode], references: [code], onDelete: Cascade)
+
+  @@index([currencyCode, capturedAt])
+  @@map("fx_rate_snapshots")
+}
+
+// ---------------------------------------------------------------------------
+// Commerce
+// ---------------------------------------------------------------------------
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String?
+  anonId    String?  @unique
+  currency  String   @default("GBP")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@index([userId])
+  @@map("carts")
+}
+
+model CartItem {
+  id           String       @id @default(cuid())
+  cartId       String
+  truckId      String
+  purchaseType PurchaseType @default(RESERVATION)
+  quantity     Int          @default(1)
+  createdAt    DateTime     @default(now())
+
+  cart  Cart  @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  truck Truck @relation(fields: [truckId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, truckId])
+  @@map("cart_items")
+}
+
+model SavedTruck {
+  id        String   @id @default(cuid())
+  userId    String
+  truckId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  truck Truck @relation(fields: [truckId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, truckId])
+  @@map("saved_trucks")
+}
+
+model Order {
+  id           String       @id @default(cuid())
+  orderNumber  String       @unique
+  userId       String?
+  guestEmail   String?
+  status       OrderStatus  @default(PENDING)
+  purchaseType PurchaseType @default(RESERVATION)
+
+  // Presentment currency and the FX rate captured at the time of sale.
+  currencyCode String
+  fxRate       Decimal @db.Decimal(18, 8)
+
+  // All amounts below are minor units of currencyCode.
+  subtotalNet Int
+  vatAmount   Int @default(0)
+  deliveryFee Int @default(0)
+  discount    Int @default(0)
+  total       Int
+  // Equivalent total in the base currency, for reporting.
+  baseTotal   Int
+
+  discountCode String?
+
+  billingName     String?
+  billingCompany  String?
+  billingEmail    String
+  billingPhone    String?
+  billingLine1    String?
+  billingLine2    String?
+  billingCity     String?
+  billingPostcode String?
+  billingCountry  String?
+
+  deliveryRequired Boolean @default(false)
+  deliveryLine1    String?
+  deliveryCity     String?
+  deliveryPostcode String?
+  deliveryCountry  String?
+  deliveryNotes    String?
+
+  stripeSessionId       String?       @unique
+  stripePaymentIntentId String?       @unique
+  paymentStatus         PaymentStatus @default(PENDING)
+  paidAt                DateTime?
+
+  customerNotes   String?
+  internalNotes   String?
+  ipAddress       String?
+  termsAcceptedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User?       @relation(fields: [userId], references: [id])
+  currency   Currency    @relation(fields: [currencyCode], references: [code])
+  items      OrderItem[]
+  payments   Payment[]
+  activities Activity[]
+
+  @@index([userId])
+  @@index([status, createdAt])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id      String  @id @default(cuid())
+  orderId String
+  truckId String?
+
+  sku          String
+  name         String
+  description  String?
+  purchaseType PurchaseType @default(RESERVATION)
+  quantity     Int          @default(1)
+
+  unitPriceNet Int
+  vatRate      Int @default(2000)
+  vatAmount    Int @default(0)
+  totalNet     Int
+  totalGross   Int
+
+  // Immutable snapshot of the vehicle at the time of sale.
+  snapshot Json?
+
+  order Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  truck Truck? @relation(fields: [truckId], references: [id])
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  orderId        String
+  provider       String        @default("stripe")
+  providerRef    String?
+  amount         Int
+  currencyCode   String
+  status         PaymentStatus @default(PENDING)
+  method         String?
+  receiptUrl     String?
+  failureCode    String?
+  failureMessage String?
+  refundedAmount Int           @default(0)
+  rawEvent       Json?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([providerRef])
+  @@map("payments")
+}
+
+model Discount {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  description String?
+  type        DiscountType @default(FIXED)
+  value       Int
+  minSubtotal Int          @default(0)
+  usageLimit  Int?
+  usedCount   Int          @default(0)
+  startsAt    DateTime?
+  expiresAt   DateTime?
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+
+  @@map("discounts")
+}
+
+model WebhookEvent {
+  id          String    @id @default(cuid())
+  provider    String    @default("stripe")
+  eventId     String    @unique
+  type        String
+  payload     Json
+  processedAt DateTime?
+  error       String?
+  createdAt   DateTime  @default(now())
+
+  @@index([type, createdAt])
+  @@map("webhook_events")
+}
+
+// ---------------------------------------------------------------------------
+// CRM
+// ---------------------------------------------------------------------------
+
+model Lead {
+  id     String     @id @default(cuid())
+  ref    String     @unique
+  status LeadStatus @default(NEW)
+  source LeadSource @default(WEBSITE_ENQUIRY)
+
+  firstName String
+  lastName  String
+  /// Mandatory — this is also the number contacted on WhatsApp, so every
+  /// lead has a working contact route even when no email is given.
+  phone     String
+  /// Optional: buyers may enquire with just a name and WhatsApp number.
+  email     String?
+  company   String?
+  country   String?
+
+  subject String?
+  message String?
+
+  truckId      String?
+  userId       String?
+  assignedToId String?
+
+  estimatedValue Int?
+  currencyCode   String  @default("GBP")
+  score          Int     @default(0)
+  lostReason     String?
+
+  nextActionAt DateTime?
+  contactedAt  DateTime?
+  closedAt     DateTime?
+
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  ipAddress   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Set only by the demo-data generator. See Truck.isDemoData.
+  isDemoData Boolean @default(false)
+
+  truck        Truck?        @relation(fields: [truckId], references: [id])
+  user         User?         @relation("LeadContact", fields: [userId], references: [id])
+  assignedTo   User?         @relation("LeadOwner", fields: [assignedToId], references: [id])
+  activities   Activity[]
+  partExchange PartExchange?
+
+  @@index([status, createdAt])
+  @@index([assignedToId, status])
+  @@index([email])
+  @@index([isDemoData])
+  @@map("leads")
+}
+
+model Activity {
+  id      String       @id @default(cuid())
+  type    ActivityType @default(NOTE)
+  subject String?
+  body    String?
+
+  leadId      String?
+  orderId     String?
+  createdById String?
+
+  dueAt       DateTime?
+  completedAt DateTime?
+  isPinned    Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lead      Lead?  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  order     Order? @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdBy User?  @relation("ActivityAuthor", fields: [createdById], references: [id])
+
+  @@index([leadId, createdAt])
+  @@index([dueAt, completedAt])
+  @@map("activities")
+}
+
+model PartExchange {
+  id           String    @id @default(cuid())
+  leadId       String    @unique
+  make         String
+  model        String
+  year         Int?
+  mileageKm    Int?
+  registration String?
+  condition    String?
+  notes        String?
+  valuationNet Int?
+  valuedAt     DateTime?
+  createdAt    DateTime  @default(now())
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@map("part_exchanges")
+}
+
+model FinanceApplication {
+  id      String        @id @default(cuid())
+  ref     String        @unique
+  userId  String?
+  truckId String?
+  status  FinanceStatus @default(SUBMITTED)
+
+  firstName    String
+  lastName     String
+  email        String
+  phone        String?
+  company      String?
+  yearsTrading Int?
+
+  vehiclePriceNet  Int
+  depositNet       Int
+  termMonths       Int
+  balloonNet       Int?
+  currencyCode     String @default("GBP")
+  estimatedMonthly Int?
+
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User?  @relation(fields: [userId], references: [id])
+  truck Truck? @relation(fields: [truckId], references: [id])
+
+  @@index([status, createdAt])
+  @@map("finance_applications")
+}
+
+// ---------------------------------------------------------------------------
+// Shipping cost calculator
+//
+// A quick, staff-facing quoting tool: pick a destination zone for a given
+// vehicle and get an instant shipping estimate, without re-keying rates for
+// every enquiry. A rate applies to a zone + a weight band; the band that
+// contains the vehicle's gross weight (or, for a car with no weight set, an
+// admin-entered fallback) determines the price. Amounts are minor units of
+// the base currency, same convention as everything else in this schema.
+// ---------------------------------------------------------------------------
+
+model ShippingZone {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  /// Free-text list of countries/regions covered, shown to staff only.
+  countries String?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rates ShippingRate[]
+
+  @@map("shipping_zones")
+}
+
+model ShippingRate {
+  id         String @id @default(cuid())
+  zoneId     String
+  /// Inclusive lower bound of the weight band, in kg.
+  minWeightKg Int   @default(0)
+  /// Exclusive upper bound; null means "and above" (the top, open-ended band).
+  maxWeightKg Int?
+  /// Shipping cost for a vehicle in this band, to this zone. Base currency.
+  priceNet   Int
+  sortOrder  Int    @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  zone ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  @@index([zoneId, minWeightKg])
+  @@map("shipping_rates")
+}
+
+model Testimonial {
+  id         String   @id @default(cuid())
+  authorName String
+  company    String?
+  rating     Int      @default(5)
+  body       String
+  isApproved Boolean  @default(false)
+  isFeatured Boolean  @default(false)
+  /// Set only by the demo-data generator. See Truck.isDemoData.
+  isDemoData Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@map("testimonials")
+}
+
+model NewsletterSubscriber {
+  id             String           @id @default(cuid())
+  email          String           @unique
+  status         SubscriberStatus @default(PENDING)
+  source         String?
+  confirmedAt    DateTime?
+  unsubscribedAt DateTime?
+  createdAt      DateTime         @default(now())
+
+  @@map("newsletter_subscribers")
+}
+
+// ---------------------------------------------------------------------------
+// Content, compliance & operations
+// ---------------------------------------------------------------------------
+
+model Page {
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  title           String
+  excerpt         String?
+  body            String
+  version         String    @default("1.0")
+  isPublished     Boolean   @default(true)
+  metaTitle       String?
+  metaDescription String?
+  publishedAt     DateTime?
+  updatedAt       DateTime  @updatedAt
+
+  @@map("pages")
+}
+
+model CookieConsent {
+  id            String   @id @default(cuid())
+  userId        String?
+  anonId        String
+  necessary     Boolean  @default(true)
+  analytics     Boolean  @default(false)
+  marketing     Boolean  @default(false)
+  preferences   Boolean  @default(false)
+  policyVersion String
+  ipHash        String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([anonId, createdAt])
+  @@map("cookie_consents")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actorEmail String?
+  action     String
+  entity     String?
+  entityId   String?
+  summary    String?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId, createdAt])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model EmailLog {
+  id         String      @id @default(cuid())
+  to         String
+  subject    String
+  template   String
+  status     EmailStatus @default(QUEUED)
+  providerId String?
+  error      String?
+  createdAt  DateTime    @default(now())
+
+  @@index([to, createdAt])
+  @@map("email_logs")
+}
+
+model RateLimit {
+  id          String   @id @default(cuid())
+  key         String
+  windowStart DateTime
+  count       Int      @default(0)
+  expiresAt   DateTime
+
+  @@unique([key, windowStart])
+  @@index([expiresAt])
+  @@map("rate_limits")
+}
+
+model Setting {
+  key       String   @id
+  value     Json
+  group     String   @default("general")
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}

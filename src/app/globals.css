@@ -1,0 +1,187 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --header-height: 4.5rem;
+  }
+
+  * {
+    @apply border-steel-200;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-steel-50 text-steel-900 antialiased;
+    font-family: var(--font-sans);
+  }
+
+  /* Visible, consistent focus ring for keyboard users only. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-white;
+  }
+
+  /*
+   * Headings inherit their colour rather than forcing a dark one, so a heading
+   * inside a dark panel is legible without every such section having to
+   * override it. Body copy sets the default.
+   */
+  h1, h2, h3, h4 {
+    @apply font-semibold tracking-tight;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Remove spinner buttons from number inputs — they misfire on touch. */
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* --- Buttons ---------------------------------------------------------- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold
+           transition-colors duration-150 disabled:pointer-events-none disabled:opacity-55;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white shadow-sm hover:bg-brand-700 active:bg-brand-800;
+  }
+  .btn-secondary {
+    @apply btn border border-steel-300 bg-white text-steel-800 shadow-sm hover:border-steel-400 hover:bg-steel-50;
+  }
+  .btn-accent {
+    @apply btn bg-accent-500 text-steel-950 shadow-sm hover:bg-accent-400;
+  }
+  .btn-ghost {
+    @apply btn text-steel-700 hover:bg-steel-100;
+  }
+  .btn-danger {
+    @apply btn bg-red-600 text-white shadow-sm hover:bg-red-700;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+  .btn-lg {
+    @apply px-6 py-3 text-base;
+  }
+
+  /* --- Forms ------------------------------------------------------------ */
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-steel-800;
+  }
+  .input {
+    @apply block w-full rounded-lg border border-steel-300 bg-white px-3.5 py-2.5 text-sm text-steel-900
+           shadow-sm placeholder:text-steel-400
+           focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500
+           disabled:cursor-not-allowed disabled:bg-steel-100;
+  }
+  .select {
+    @apply input pr-9 appearance-none;
+    /* Chevron drawn as a data URI. Kept out of @apply: Tailwind cannot parse
+       an arbitrary value containing spaces. */
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23647694' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.6rem center;
+    background-size: 1.25rem 1.25rem;
+  }
+  .textarea {
+    @apply input min-h-[7rem] resize-y;
+  }
+  .checkbox {
+    @apply h-4 w-4 rounded border-steel-300 text-brand-600 focus:ring-brand-500;
+  }
+  .field-error {
+    @apply mt-1.5 text-xs font-medium text-red-600;
+  }
+  .hint {
+    @apply mt-1.5 text-xs text-steel-500;
+  }
+
+  /* --- Surfaces --------------------------------------------------------- */
+  .card {
+    @apply rounded-xl border border-steel-200 bg-white shadow-card;
+  }
+  .card-hover {
+    @apply card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift;
+  }
+  .panel {
+    @apply rounded-xl border border-steel-200 bg-white p-5 shadow-card sm:p-6;
+  }
+
+  /* --- Badges ----------------------------------------------------------- */
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+  .badge-neutral { @apply badge bg-steel-100 text-steel-700; }
+  .badge-info    { @apply badge bg-brand-50 text-brand-700; }
+  .badge-success { @apply badge bg-emerald-50 text-emerald-700; }
+  .badge-warning { @apply badge bg-amber-50 text-amber-800; }
+  .badge-danger  { @apply badge bg-red-50 text-red-700; }
+
+  /* --- Layout ----------------------------------------------------------- */
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  .section {
+    @apply py-12 sm:py-16;
+  }
+  .prose-legal {
+    @apply max-w-none text-[15px] leading-7 text-steel-700;
+  }
+  .prose-legal h2 {
+    @apply mb-3 mt-10 text-xl font-semibold text-steel-950;
+  }
+  .prose-legal h3 {
+    @apply mb-2 mt-6 text-base font-semibold text-steel-900;
+  }
+  .prose-legal p { @apply mb-4; }
+  .prose-legal ul { @apply mb-4 list-disc space-y-1.5 pl-6; }
+  .prose-legal ol { @apply mb-4 list-decimal space-y-1.5 pl-6; }
+  .prose-legal a { @apply font-medium text-brand-600 underline underline-offset-2 hover:text-brand-700; }
+  .prose-legal table { @apply mb-6 w-full border-collapse text-sm; }
+  .prose-legal th { @apply border border-steel-200 bg-steel-50 px-3 py-2 text-left font-semibold; }
+  .prose-legal td { @apply border border-steel-200 px-3 py-2 align-top; }
+
+  /* Screen-reader-only, revealed on focus (skip link). */
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100]
+           focus:rounded-lg focus:bg-brand-600 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.steel.300') transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar { height: 8px; width: 8px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-steel-300;
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}

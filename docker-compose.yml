@@ -1,0 +1,30 @@
+# Local development database.
+#
+#   docker compose up -d
+#   npm run db:migrate
+#   npm run db:seed
+#
+# Not intended for production — use a managed Postgres instance there.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ukaf-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ukaf
+      POSTGRES_PASSWORD: ukaf
+      POSTGRES_DB: ukaf
+    ports:
+      # Host port 5433 to avoid clashing with a locally installed Postgres.
+      - '5433:5432'
+    volumes:
+      - ukaf-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ukaf -d ukaf']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  ukaf-pgdata:

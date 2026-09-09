@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="Photograph coming soon">
+  <rect width="800" height="600" fill="#eceef2"/>
+  <g fill="none" stroke="#b0bacb" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M150 380V220a16 16 0 0 1 16-16h270v176"/>
+    <path d="M436 268h96l72 84v28h-72"/>
+    <circle cx="264" cy="392" r="36"/>
+    <circle cx="512" cy="392" r="36"/>
+    <path d="M300 392h176"/>
+  </g>
+  <text x="400" y="486" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="26" fill="#8494ae" text-anchor="middle">Photographs coming soon</text>
+</svg>

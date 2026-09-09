@@ -36,6 +36,12 @@ export const env = {
   databaseUrl: requireInProduction('DATABASE_URL'),
 
   siteUrl: (read('NEXT_PUBLIC_SITE_URL') ?? 'http://localhost:3002').replace(/\/$/, ''),
+  /**
+   * Optional second trusted origin for a dedicated admin process (e.g. the
+   * same app run again on another port/domain with ADMIN_ONLY=true). CSRF
+   * accepts requests from either origin when this is set.
+   */
+  adminSiteUrl: read('ADMIN_SITE_URL')?.replace(/\/$/, ''),
 
   authSecret: requireInProduction('AUTH_SECRET', DEV_SECRET),
 

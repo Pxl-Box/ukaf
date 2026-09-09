@@ -3,7 +3,7 @@
 # UKAF — in-container setup. Run *inside* the LXC by proxmox-install.sh.
 # Not meant to be run directly unless you know what you're doing.
 #
-# Args: REPO_URL BRANCH APP_PORT WEBHOOK_PORT WEBHOOK_SECRET SITE_URL PG_PASSWORD AUTH_SECRET
+# Args: REPO_URL BRANCH APP_PORT WEBHOOK_PORT WEBHOOK_SECRET SITE_URL PG_PASSWORD AUTH_SECRET [ADMIN_PORT]
 #
 set -euo pipefail
 
@@ -15,6 +15,7 @@ WEBHOOK_SECRET="${5:?webhook secret required}"
 SITE_URL="${6:-http://localhost:${APP_PORT}}"
 PG_PASSWORD="${7:?postgres password required}"
 AUTH_SECRET="${8:?auth secret required}"
+ADMIN_PORT="${9:-3003}"
 
 APP_DIR=/home/ukaf/app
 DEPLOY_LOG=/var/log/ukaf-deploy.log
@@ -62,6 +63,11 @@ NEXT_PUBLIC_COMPANY_PHONE="+44 161 000 0000"
 NEXT_PUBLIC_COMPANY_EMAIL="sales@ukaf.co.uk"
 SEED_ADMIN_EMAIL="admin@ukaf.co.uk"
 SEED_ADMIN_PASSWORD="ChangeMe!2024"
+# The admin instance (ukaf-admin.service, port ${ADMIN_PORT}) always serves
+# /admin regardless of hostname. Set this to whatever origin reaches that
+# port/domain (e.g. http://<container-ip>:${ADMIN_PORT} or
+# https://admin.yourdomain.com) so CSRF accepts requests from it too.
+ADMIN_SITE_URL=""
 # Fill these in for production — payments and email will no-op until you do:
 STRIPE_SECRET_KEY=""
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=""
@@ -102,6 +108,28 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
+# Second copy of the same app, forced into "admin" mode regardless of
+# hostname — the simplest way to put admin on its own port/domain without
+# depending on DNS/subdomain routing working correctly.
+cat > /etc/systemd/system/ukaf-admin.service <<EOF
+[Unit]
+Description=UKAF admin app
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=ukaf
+WorkingDirectory=${APP_DIR}
+EnvironmentFile=${APP_DIR}/.env
+Environment=ADMIN_ONLY=true
+ExecStart=/usr/bin/npm run start:admin
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 # --- Deploy script: git pull -> install -> migrate -> build -> restart ----
 mkdir -p /home/ukaf/bin
 cat > /home/ukaf/bin/deploy.sh <<EOF
@@ -120,10 +148,10 @@ chown -R ukaf:ukaf /home/ukaf/bin
 chmod +x /home/ukaf/bin/deploy.sh
 touch "$DEPLOY_LOG" && chown ukaf:ukaf "$DEPLOY_LOG"
 
-# The deploy script needs to restart a root-owned systemd unit; allow the
-# ukaf user to do only that, without a password, nothing else.
+# The deploy script needs to restart root-owned systemd units; allow the
+# ukaf user to do only that, nothing else.
 cat > /etc/sudoers.d/ukaf-deploy <<EOF
-ukaf ALL=(root) NOPASSWD: /usr/bin/systemctl restart ukaf
+ukaf ALL=(root) NOPASSWD: /usr/bin/systemctl restart ukaf, /usr/bin/systemctl restart ukaf-admin
 EOF
 chmod 440 /etc/sudoers.d/ukaf-deploy
 
@@ -162,6 +190,7 @@ function deploy() {
       return;
     }
     spawn('sudo', ['/usr/bin/systemctl', 'restart', 'ukaf'], { stdio: 'inherit' });
+    spawn('sudo', ['/usr/bin/systemctl', 'restart', 'ukaf-admin'], { stdio: 'inherit' });
   });
 }
 
@@ -224,6 +253,7 @@ EOF
 
 systemctl daemon-reload
 systemctl enable --now ukaf
+systemctl enable --now ukaf-admin
 systemctl enable --now ukaf-webhook
 
 echo "Setup complete."

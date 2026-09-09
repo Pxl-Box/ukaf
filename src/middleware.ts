@@ -78,7 +78,10 @@ export async function middleware(request: NextRequest) {
   const isProduction = process.env.NODE_ENV === 'production';
 
   const host = (request.headers.get('host') ?? '').split(':')[0].toLowerCase();
-  const isAdminHost = ADMIN_HOST !== null && host === ADMIN_HOST;
+  // ADMIN_ONLY forces this behaviour regardless of hostname — for running a
+  // second copy of the same app on its own port (e.g. 3003) as the admin
+  // instance, without needing a working subdomain/DNS setup.
+  const isAdminHost = process.env.ADMIN_ONLY === 'true' || (ADMIN_HOST !== null && host === ADMIN_HOST);
 
   // On the admin subdomain, "/" behaves like "/admin" for auth purposes —
   // signed-out visitors land on the login page, signed-in staff on the

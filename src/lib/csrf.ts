@@ -59,16 +59,22 @@ export async function verifyCsrf(request: NextRequest | Request): Promise<string
   const method = request.method.toUpperCase();
   if (SAFE_METHODS.has(method)) return null;
 
-  // 1. Origin / Referer must match the configured site origin.
+  // 1. Origin / Referer must match the configured site origin (or the
+  // dedicated admin origin, when a separate admin process is in use).
   const origin = request.headers.get('origin');
   const referer = request.headers.get('referer');
   const expectedOrigin = new URL(env.siteUrl).origin;
+  const expectedAdminOrigin = env.adminSiteUrl ? new URL(env.adminSiteUrl).origin : null;
 
   const candidate = origin ?? (referer ? safeOrigin(referer) : null);
   if (!candidate) {
     return 'Missing Origin header on a state-changing request.';
   }
-  if (candidate !== expectedOrigin && !isLocalhostPair(candidate, expectedOrigin)) {
+  const allowed =
+    candidate === expectedOrigin ||
+    candidate === expectedAdminOrigin ||
+    isLocalhostPair(candidate, expectedOrigin);
+  if (!allowed) {
     return 'Request origin is not allowed.';
   }
 

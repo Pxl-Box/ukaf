@@ -4,6 +4,7 @@ import { getCurrentUser, isStaff } from '@/lib/auth';
 import { getActiveCurrencies, getDisplayCurrency } from '@/lib/currency';
 import { getCartCount } from '@/lib/cart';
 import { getSettings } from '@/lib/settings';
+import { ThemeToggle } from '../ThemeToggle';
 import { CartIcon, HeartIcon, PhoneIcon } from '../ui/Icons';
 import { CurrencySwitcher } from './CurrencySwitcher';
 import { AccountMenu, DesktopNav, HeaderSearch, MobileNav, type NavGroup } from './HeaderClient';
@@ -112,6 +113,8 @@ export async function Header() {
         <HeaderSearch className="ml-auto hidden w-full max-w-xs md:block" />
 
         <div className="ml-auto flex items-center gap-0.5 md:ml-2">
+          <ThemeToggle className="hidden h-10 w-10 place-items-center rounded-lg text-steel-500 hover:bg-steel-100 hover:text-steel-900 dark:text-steel-400 dark:hover:bg-steel-800 dark:hover:text-white sm:grid" />
+
           <Link
             href="/account/saved"
             className="relative hidden h-10 w-10 place-items-center rounded-lg text-steel-700 hover:bg-steel-100 sm:grid"

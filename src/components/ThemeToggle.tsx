@@ -7,10 +7,12 @@ export const THEME_STORAGE_KEY = 'ukaf-theme';
 
 /**
  * Blocking script injected into <head> so the theme class is set before the
- * page paints — without this, a dark-mode visitor sees a flash of the light
- * theme on every load. Runs before hydration, so it can't use React.
+ * page paints — without this, a returning dark-mode visitor sees a flash of
+ * the light theme on every load. Runs before hydration, so it can't use
+ * React. Light is the default: dark mode only applies once someone has
+ * explicitly turned it on here, regardless of their OS/browser preference.
  */
-export const themeInitScript = `(function(){try{var t=localStorage.getItem('${THEME_STORAGE_KEY}');var d=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',d);}catch(e){}})();`;
+export const themeInitScript = `(function(){try{var t=localStorage.getItem('${THEME_STORAGE_KEY}');document.documentElement.classList.toggle('dark',t==='dark');}catch(e){}})();`;
 
 function applyTheme(dark: boolean) {
   document.documentElement.classList.toggle('dark', dark);

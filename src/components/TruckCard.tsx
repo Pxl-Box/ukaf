@@ -43,7 +43,7 @@ export async function TruckCard({
         heading's inset ::after overlay, so an extra aria-hidden link would only
         add a duplicate target for assistive technology.
       */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-steel-100">
+      <div className="relative aspect-[4/3] overflow-hidden bg-steel-100 dark:bg-steel-800">
         <Image
           src={image?.url ?? PLACEHOLDER_IMAGE}
           alt={image?.alt ?? truck.title}
@@ -76,13 +76,13 @@ export async function TruckCard({
           {truck.make.name} · {truck.category.name}
         </p>
 
-        <h3 className="mt-1 text-[15px] font-semibold leading-snug text-steel-950">
+        <h3 className="mt-1 text-[15px] font-semibold leading-snug text-steel-950 dark:text-white">
           <Link href={`/trucks/${truck.slug}`} className="after:absolute after:inset-0 hover:text-brand-700">
             {truck.title}
           </Link>
         </h3>
 
-        <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs text-steel-600">
+        <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs text-steel-600 dark:text-steel-400">
           <Spec icon={<CalendarIcon />} label="Year" value={String(truck.year)} />
           <Spec icon={<GaugeIcon />} label="Mileage" value={formatMileage(truck.mileageKm)} />
           <Spec icon={<CogIcon />} label="Gearbox" value={humanise(truck.transmission)} />
@@ -94,12 +94,18 @@ export async function TruckCard({
         </dl>
 
         {truck.axleConfig || truck.grossWeightKg || truck.powerBhp ? (
-          <p className="mt-3 flex flex-wrap gap-x-2 gap-y-1 text-[11px] text-steel-500">
-            {truck.axleConfig ? <span className="rounded bg-steel-100 px-1.5 py-0.5">{truck.axleConfig}</span> : null}
-            {truck.grossWeightKg ? (
-              <span className="rounded bg-steel-100 px-1.5 py-0.5">{formatWeight(truck.grossWeightKg)} GVW</span>
+          <p className="mt-3 flex flex-wrap gap-x-2 gap-y-1 text-[11px] text-steel-500 dark:text-steel-400">
+            {truck.axleConfig ? (
+              <span className="rounded bg-steel-100 px-1.5 py-0.5 dark:bg-steel-800">{truck.axleConfig}</span>
             ) : null}
-            {truck.powerBhp ? <span className="rounded bg-steel-100 px-1.5 py-0.5">{truck.powerBhp} bhp</span> : null}
+            {truck.grossWeightKg ? (
+              <span className="rounded bg-steel-100 px-1.5 py-0.5 dark:bg-steel-800">
+                {formatWeight(truck.grossWeightKg)} GVW
+              </span>
+            ) : null}
+            {truck.powerBhp ? (
+              <span className="rounded bg-steel-100 px-1.5 py-0.5 dark:bg-steel-800">{truck.powerBhp} bhp</span>
+            ) : null}
           </p>
         ) : null}
 
@@ -112,7 +118,7 @@ export async function TruckCard({
             size="sm"
           />
           {truck.location ? (
-            <p className="pb-0.5 text-right text-[11px] text-steel-400">{truck.location.city}</p>
+            <p className="pb-0.5 text-right text-[11px] text-steel-400 dark:text-steel-500">{truck.location.city}</p>
           ) : null}
         </div>
       </div>

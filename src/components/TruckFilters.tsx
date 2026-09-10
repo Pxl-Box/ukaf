@@ -181,7 +181,7 @@ export function TruckFilters({ facets, currencySymbol, rate, categoryFilterField
             aria-label="Minimum price"
             className="input py-2 text-sm"
           />
-          <span className="text-steel-400">–</span>
+          <span className="text-steel-400 dark:text-steel-500">–</span>
           <input
             type="text"
             inputMode="numeric"
@@ -212,7 +212,7 @@ export function TruckFilters({ facets, currencySymbol, rate, categoryFilterField
               </option>
             ))}
           </select>
-          <span className="text-steel-400">–</span>
+          <span className="text-steel-400 dark:text-steel-500">–</span>
           <select
             value={searchParams.get('maxYear') ?? ''}
             onChange={(event) => apply({ maxYear: event.target.value })}
@@ -257,8 +257,8 @@ export function TruckFilters({ facets, currencySymbol, rate, categoryFilterField
                 className={cn(
                   'rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors',
                   searchParams.get('axleConfig') === entry.value
-                    ? 'border-brand-500 bg-brand-50 text-brand-700'
-                    : 'border-steel-300 text-steel-600 hover:bg-steel-50',
+                    ? 'border-brand-500 bg-brand-50 text-brand-700 dark:border-brand-600 dark:bg-brand-950 dark:text-brand-300'
+                    : 'border-steel-300 text-steel-600 hover:bg-steel-50 dark:border-steel-700 dark:text-steel-400 dark:hover:bg-steel-800',
                 )}
               >
                 {entry.value}
@@ -342,7 +342,7 @@ export function TruckFilters({ facets, currencySymbol, rate, categoryFilterField
 
       {categoryFilterFields.length > 0 ? (
         <>
-          <div className="border-t border-steel-200 pt-1" aria-hidden="true" />
+          <div className="border-t border-steel-200 pt-1 dark:border-steel-800" aria-hidden="true" />
           {categoryFilterFields.map((field) => {
             const paramKey = `cf_${field.key}`;
             const current = searchParams.get(paramKey);
@@ -401,7 +401,7 @@ export function TruckFilters({ facets, currencySymbol, rate, categoryFilterField
       {/* Desktop sidebar */}
       <aside className="sticky top-28 hidden max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 lg:block scrollbar-thin">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-steel-900">Filter stock</h2>
+          <h2 className="text-sm font-semibold text-steel-900 dark:text-steel-100">Filter stock</h2>
           {pending ? <Spinner className="text-steel-400" /> : null}
         </div>
         {panel}
@@ -416,20 +416,20 @@ export function TruckFilters({ facets, currencySymbol, rate, categoryFilterField
             onClick={() => setMobileOpen(false)}
             className="absolute inset-0 bg-steel-950/50"
           />
-          <div className="absolute inset-y-0 left-0 flex w-[min(21rem,90vw)] flex-col bg-white">
-            <div className="flex items-center justify-between border-b border-steel-200 px-4 py-3">
+          <div className="absolute inset-y-0 left-0 flex w-[min(21rem,90vw)] flex-col bg-white dark:bg-steel-900">
+            <div className="flex items-center justify-between border-b border-steel-200 px-4 py-3 dark:border-steel-800">
               <h2 className="text-sm font-semibold">Filter stock</h2>
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
                 aria-label="Close filters"
-                className="grid h-9 w-9 place-items-center rounded-lg hover:bg-steel-100"
+                className="grid h-9 w-9 place-items-center rounded-lg hover:bg-steel-100 dark:hover:bg-steel-800"
               >
                 <CloseIcon />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4">{panel}</div>
-            <div className="border-t border-steel-200 p-4">
+            <div className="border-t border-steel-200 p-4 dark:border-steel-800">
               <button type="button" onClick={() => setMobileOpen(false)} className="btn-primary w-full">
                 Show results
               </button>
@@ -443,8 +443,8 @@ export function TruckFilters({ facets, currencySymbol, rate, categoryFilterField
 
 function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <fieldset className="border-t border-steel-200 pt-4 first:border-t-0 first:pt-0">
-      <legend className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-steel-500">{title}</legend>
+    <fieldset className="border-t border-steel-200 pt-4 first:border-t-0 first:pt-0 dark:border-steel-800">
+      <legend className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-steel-500 dark:text-steel-400">{title}</legend>
       {children}
     </fieldset>
   );
@@ -462,10 +462,10 @@ function FilterOption({
   count?: number;
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2.5 rounded px-1 py-1 text-sm text-steel-700 hover:bg-steel-50">
+    <label className="flex cursor-pointer items-center gap-2.5 rounded px-1 py-1 text-sm text-steel-700 hover:bg-steel-50 dark:text-steel-300 dark:hover:bg-steel-800">
       <input type="checkbox" checked={checked} onChange={onChange} className="checkbox" />
       <span className="flex-1 truncate">{label}</span>
-      {count !== undefined ? <span className="text-xs tabular-nums text-steel-400">{count}</span> : null}
+      {count !== undefined ? <span className="text-xs tabular-nums text-steel-400 dark:text-steel-500">{count}</span> : null}
     </label>
   );
 }
@@ -484,7 +484,7 @@ export function SortSelect() {
 
   return (
     <div className="flex items-center gap-2">
-      <label htmlFor="sort" className="whitespace-nowrap text-sm text-steel-500">
+      <label htmlFor="sort" className="whitespace-nowrap text-sm text-steel-500 dark:text-steel-400">
         Sort
       </label>
       <select

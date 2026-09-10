@@ -56,8 +56,8 @@ export async function PriceBlock({
   if (priceOnApplication) {
     return (
       <div className={className}>
-        <p className={cn('font-bold tracking-tight text-steel-900', sizes[size])}>POA</p>
-        {showVatLine ? <p className="mt-0.5 text-xs text-steel-500">Price on application</p> : null}
+        <p className={cn('font-bold tracking-tight text-steel-900 dark:text-white', sizes[size])}>POA</p>
+        {showVatLine ? <p className="mt-0.5 text-xs text-steel-500 dark:text-steel-400">Price on application</p> : null}
       </div>
     );
   }
@@ -67,12 +67,12 @@ export async function PriceBlock({
 
   return (
     <div className={className}>
-      <p className={cn('font-bold tracking-tight text-steel-950', sizes[size])}>
+      <p className={cn('font-bold tracking-tight text-steel-950 dark:text-white', sizes[size])}>
         {formatFromBase(amountBase, currency)}
       </p>
 
       {showVatLine ? (
-        <p className="mt-0.5 text-xs text-steel-500">
+        <p className="mt-0.5 text-xs text-steel-500 dark:text-steel-400">
           {VAT_LABELS[vatTreatment]}
           {vatTreatment === 'PLUS_VAT' && vat > 0 ? (
             <> · {formatFromBase(amountBase + vat, currency)} inc. VAT</>
@@ -81,7 +81,7 @@ export async function PriceBlock({
       ) : null}
 
       {isConverted ? (
-        <p className="mt-1 text-xs text-steel-400">
+        <p className="mt-1 text-xs text-steel-400 dark:text-steel-500">
           Invoiced as {formatMoney(amountBase, base)} · indicative conversion
         </p>
       ) : null}

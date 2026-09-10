@@ -341,6 +341,13 @@ export const DocumentIcon = (props: IconProps) => (
   </Icon>
 );
 
+export const BookIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H12v16H5.5A1.5 1.5 0 0 1 4 18.5v-13Z" />
+    <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H12v16h6.5a1.5 1.5 0 0 0 1.5-1.5v-13Z" />
+  </Icon>
+);
+
 export const SunIcon = (props: IconProps) => (
   <Icon {...props}>
     <circle cx="12" cy="12" r="4" />

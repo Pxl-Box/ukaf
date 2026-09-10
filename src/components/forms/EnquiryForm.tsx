@@ -113,20 +113,20 @@ export function EnquiryForm({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <TextField
-            name="email"
-            type="email"
-            label="Email"
-            autoComplete="email"
-            required
-            error={firstError(fieldErrors, 'email')}
-          />
-          <TextField
             name="phone"
             type="tel"
-            label="Phone"
+            label="WhatsApp / phone number"
             autoComplete="tel"
-            hint="Fastest way for us to help."
+            required
+            hint="How we'll reach you — including on WhatsApp."
             error={firstError(fieldErrors, 'phone')}
+          />
+          <TextField
+            name="email"
+            type="email"
+            label="Email (optional)"
+            autoComplete="email"
+            error={firstError(fieldErrors, 'email')}
           />
         </div>
 

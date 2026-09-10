@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import type { Role } from '@prisma/client';
 import { cn } from '@/lib/utils';
 import {
+  BookIcon,
   BriefcaseIcon,
   ChartIcon,
   CurrencyIcon,
@@ -71,6 +72,10 @@ const SECTIONS: Array<{ title: string; items: NavItem[] }> = [
       { href: '/admin/settings', label: 'Settings', icon: <SettingsIcon />, minRole: 'ADMIN' },
       { href: '/admin/audit', label: 'Audit log', icon: <DocumentIcon />, minRole: 'ADMIN' },
     ],
+  },
+  {
+    title: 'Help',
+    items: [{ href: '/admin/docs', label: 'Help & guides', icon: <BookIcon /> }],
   },
 ];
 

@@ -4,6 +4,7 @@ import './globals.css';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { CookieBanner } from '@/components/CookieBanner';
+import { themeInitScript } from '@/components/ThemeToggle';
 import { env, reportIntegrationStatus } from '@/lib/env';
 
 reportIntegrationStatus();
@@ -53,13 +54,16 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   themeColor: '#142257',
-  colorScheme: 'light',
+  colorScheme: 'light dark',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-GB">
-      <body className="flex min-h-screen flex-col">
+    <html lang="en-GB" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
+      <body className="flex min-h-screen flex-col bg-steel-50 dark:bg-steel-950">
         <Link href="#main" className="skip-link">
           Skip to main content
         </Link>

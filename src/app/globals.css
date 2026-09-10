@@ -9,7 +9,7 @@
   }
 
   * {
-    @apply border-steel-200;
+    @apply border-steel-200 dark:border-steel-800;
   }
 
   html {
@@ -18,13 +18,13 @@
   }
 
   body {
-    @apply bg-steel-50 text-steel-900 antialiased;
+    @apply bg-steel-50 text-steel-900 antialiased dark:bg-steel-950 dark:text-steel-100;
     font-family: var(--font-sans);
   }
 
   /* Visible, consistent focus ring for keyboard users only. */
   :focus-visible {
-    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-white;
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-white dark:ring-offset-steel-950;
   }
 
   /*
@@ -71,13 +71,14 @@
     @apply btn bg-brand-600 text-white shadow-sm hover:bg-brand-700 active:bg-brand-800;
   }
   .btn-secondary {
-    @apply btn border border-steel-300 bg-white text-steel-800 shadow-sm hover:border-steel-400 hover:bg-steel-50;
+    @apply btn border border-steel-300 bg-white text-steel-800 shadow-sm hover:border-steel-400 hover:bg-steel-50
+           dark:border-steel-700 dark:bg-steel-900 dark:text-steel-100 dark:hover:border-steel-600 dark:hover:bg-steel-800;
   }
   .btn-accent {
     @apply btn bg-accent-500 text-steel-950 shadow-sm hover:bg-accent-400;
   }
   .btn-ghost {
-    @apply btn text-steel-700 hover:bg-steel-100;
+    @apply btn text-steel-700 hover:bg-steel-100 dark:text-steel-300 dark:hover:bg-steel-800;
   }
   .btn-danger {
     @apply btn bg-red-600 text-white shadow-sm hover:bg-red-700;
@@ -91,13 +92,15 @@
 
   /* --- Forms ------------------------------------------------------------ */
   .label {
-    @apply mb-1.5 block text-sm font-medium text-steel-800;
+    @apply mb-1.5 block text-sm font-medium text-steel-800 dark:text-steel-200;
   }
   .input {
     @apply block w-full rounded-lg border border-steel-300 bg-white px-3.5 py-2.5 text-sm text-steel-900
            shadow-sm placeholder:text-steel-400
            focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500
-           disabled:cursor-not-allowed disabled:bg-steel-100;
+           disabled:cursor-not-allowed disabled:bg-steel-100
+           dark:border-steel-700 dark:bg-steel-900 dark:text-steel-100 dark:placeholder:text-steel-500
+           dark:disabled:bg-steel-800;
   }
   .select {
     @apply input pr-9 appearance-none;
@@ -118,29 +121,29 @@
     @apply mt-1.5 text-xs font-medium text-red-600;
   }
   .hint {
-    @apply mt-1.5 text-xs text-steel-500;
+    @apply mt-1.5 text-xs text-steel-500 dark:text-steel-400;
   }
 
   /* --- Surfaces --------------------------------------------------------- */
   .card {
-    @apply rounded-xl border border-steel-200 bg-white shadow-card;
+    @apply rounded-xl border border-steel-200 bg-white shadow-card dark:border-steel-800 dark:bg-steel-900;
   }
   .card-hover {
     @apply card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift;
   }
   .panel {
-    @apply rounded-xl border border-steel-200 bg-white p-5 shadow-card sm:p-6;
+    @apply rounded-xl border border-steel-200 bg-white p-5 shadow-card sm:p-6 dark:border-steel-800 dark:bg-steel-900;
   }
 
   /* --- Badges ----------------------------------------------------------- */
   .badge {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
   }
-  .badge-neutral { @apply badge bg-steel-100 text-steel-700; }
-  .badge-info    { @apply badge bg-brand-50 text-brand-700; }
-  .badge-success { @apply badge bg-emerald-50 text-emerald-700; }
-  .badge-warning { @apply badge bg-amber-50 text-amber-800; }
-  .badge-danger  { @apply badge bg-red-50 text-red-700; }
+  .badge-neutral { @apply badge bg-steel-100 text-steel-700 dark:bg-steel-800 dark:text-steel-300; }
+  .badge-info    { @apply badge bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300; }
+  .badge-success { @apply badge bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300; }
+  .badge-warning { @apply badge bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300; }
+  .badge-danger  { @apply badge bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300; }
 
   /* --- Layout ----------------------------------------------------------- */
   .container-page {
@@ -150,21 +153,21 @@
     @apply py-12 sm:py-16;
   }
   .prose-legal {
-    @apply max-w-none text-[15px] leading-7 text-steel-700;
+    @apply max-w-none text-[15px] leading-7 text-steel-700 dark:text-steel-300;
   }
   .prose-legal h2 {
-    @apply mb-3 mt-10 text-xl font-semibold text-steel-950;
+    @apply mb-3 mt-10 text-xl font-semibold text-steel-950 dark:text-white;
   }
   .prose-legal h3 {
-    @apply mb-2 mt-6 text-base font-semibold text-steel-900;
+    @apply mb-2 mt-6 text-base font-semibold text-steel-900 dark:text-steel-100;
   }
   .prose-legal p { @apply mb-4; }
   .prose-legal ul { @apply mb-4 list-disc space-y-1.5 pl-6; }
   .prose-legal ol { @apply mb-4 list-decimal space-y-1.5 pl-6; }
-  .prose-legal a { @apply font-medium text-brand-600 underline underline-offset-2 hover:text-brand-700; }
+  .prose-legal a { @apply font-medium text-brand-600 underline underline-offset-2 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300; }
   .prose-legal table { @apply mb-6 w-full border-collapse text-sm; }
-  .prose-legal th { @apply border border-steel-200 bg-steel-50 px-3 py-2 text-left font-semibold; }
-  .prose-legal td { @apply border border-steel-200 px-3 py-2 align-top; }
+  .prose-legal th { @apply border border-steel-200 bg-steel-50 px-3 py-2 text-left font-semibold dark:border-steel-800 dark:bg-steel-900; }
+  .prose-legal td { @apply border border-steel-200 px-3 py-2 align-top dark:border-steel-800; }
 
   /* Screen-reader-only, revealed on focus (skip link). */
   .skip-link {

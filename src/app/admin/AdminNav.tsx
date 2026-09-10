@@ -107,8 +107,8 @@ export function AdminNav({
                   className={cn(
                     'inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border px-3 py-2 text-sm font-medium',
                     isActive(item)
-                      ? 'border-brand-200 bg-brand-50 text-brand-700'
-                      : 'border-steel-200 bg-white text-steel-700',
+                      ? 'border-brand-200 bg-brand-50 text-brand-700 dark:border-brand-800 dark:bg-brand-950 dark:text-brand-300'
+                      : 'border-steel-200 bg-white text-steel-700 dark:border-steel-700 dark:bg-steel-900 dark:text-steel-300',
                   )}
                 >
                   {item.icon}

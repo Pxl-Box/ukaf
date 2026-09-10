@@ -26,14 +26,27 @@ export function Badge({
 }
 
 const ALERT_STYLES: Record<Tone, { wrapper: string; icon: ReactNode }> = {
-  neutral: { wrapper: 'border-steel-200 bg-steel-50 text-steel-800', icon: <InfoIcon className="text-steel-500" /> },
-  info: { wrapper: 'border-brand-200 bg-brand-50 text-brand-900', icon: <InfoIcon className="text-brand-600" /> },
+  neutral: {
+    wrapper: 'border-steel-200 bg-steel-50 text-steel-800 dark:border-steel-700 dark:bg-steel-900 dark:text-steel-200',
+    icon: <InfoIcon className="text-steel-500" />,
+  },
+  info: {
+    wrapper: 'border-brand-200 bg-brand-50 text-brand-900 dark:border-brand-800 dark:bg-brand-950 dark:text-brand-200',
+    icon: <InfoIcon className="text-brand-600" />,
+  },
   success: {
-    wrapper: 'border-emerald-200 bg-emerald-50 text-emerald-900',
+    wrapper:
+      'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200',
     icon: <CheckCircleIcon className="text-emerald-600" />,
   },
-  warning: { wrapper: 'border-amber-200 bg-amber-50 text-amber-900', icon: <AlertIcon className="text-amber-600" /> },
-  danger: { wrapper: 'border-red-200 bg-red-50 text-red-900', icon: <AlertIcon className="text-red-600" /> },
+  warning: {
+    wrapper: 'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200',
+    icon: <AlertIcon className="text-amber-600" />,
+  },
+  danger: {
+    wrapper: 'border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950 dark:text-red-200',
+    icon: <AlertIcon className="text-red-600" />,
+  },
 };
 
 export function Alert({
@@ -74,10 +87,10 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-steel-300 bg-white px-6 py-14 text-center">
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-steel-300 bg-white px-6 py-14 text-center dark:border-steel-700 dark:bg-steel-900">
       {icon ? <div className="mb-4 text-3xl text-steel-400">{icon}</div> : null}
-      <h3 className="text-base font-semibold text-steel-900">{title}</h3>
-      {description ? <p className="mt-1.5 max-w-md text-sm text-steel-500">{description}</p> : null}
+      <h3 className="text-base font-semibold text-steel-900 dark:text-steel-100">{title}</h3>
+      {description ? <p className="mt-1.5 max-w-md text-sm text-steel-500 dark:text-steel-400">{description}</p> : null}
       {action ? <div className="mt-5">{action}</div> : null}
     </div>
   );
@@ -97,21 +110,21 @@ export function Stat({
   icon?: ReactNode;
 }) {
   const accent: Record<Tone, string> = {
-    neutral: 'text-steel-900',
-    info: 'text-brand-700',
-    success: 'text-emerald-700',
-    warning: 'text-amber-700',
-    danger: 'text-red-700',
+    neutral: 'text-steel-900 dark:text-steel-100',
+    info: 'text-brand-700 dark:text-brand-400',
+    success: 'text-emerald-700 dark:text-emerald-400',
+    warning: 'text-amber-700 dark:text-amber-400',
+    danger: 'text-red-700 dark:text-red-400',
   };
 
   return (
     <div className="panel">
       <div className="flex items-start justify-between gap-3">
-        <p className="text-xs font-medium uppercase tracking-wide text-steel-500">{label}</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-steel-500 dark:text-steel-400">{label}</p>
         {icon ? <span className="text-lg text-steel-400">{icon}</span> : null}
       </div>
       <p className={cn('mt-2 text-2xl font-bold tabular-nums', accent[tone])}>{value}</p>
-      {hint ? <p className="mt-1 text-xs text-steel-500">{hint}</p> : null}
+      {hint ? <p className="mt-1 text-xs text-steel-500 dark:text-steel-400">{hint}</p> : null}
     </div>
   );
 }
@@ -136,7 +149,7 @@ export function SectionHeading({
           <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-brand-600">{eyebrow}</p>
         ) : null}
         <h2 className="text-2xl font-bold sm:text-3xl">{title}</h2>
-        {description ? <p className="mt-2 text-[15px] leading-relaxed text-steel-600">{description}</p> : null}
+        {description ? <p className="mt-2 text-[15px] leading-relaxed text-steel-600 dark:text-steel-400">{description}</p> : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
     </div>
@@ -148,17 +161,20 @@ export type Crumb = { label: string; href?: string };
 export function Breadcrumbs({ items }: { items: Crumb[] }) {
   return (
     <nav aria-label="Breadcrumb" className="mb-6">
-      <ol className="flex flex-wrap items-center gap-1 text-xs text-steel-500">
+      <ol className="flex flex-wrap items-center gap-1 text-xs text-steel-500 dark:text-steel-400">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
           return (
             <li key={`${item.label}-${index}`} className="flex items-center gap-1">
               {item.href && !isLast ? (
-                <Link href={item.href} className="hover:text-brand-600 hover:underline">
+                <Link href={item.href} className="hover:text-brand-600 hover:underline dark:hover:text-brand-400">
                   {item.label}
                 </Link>
               ) : (
-                <span aria-current={isLast ? 'page' : undefined} className={isLast ? 'font-medium text-steel-700' : ''}>
+                <span
+                  aria-current={isLast ? 'page' : undefined}
+                  className={isLast ? 'font-medium text-steel-700 dark:text-steel-200' : ''}
+                >
                   {item.label}
                 </span>
               )}
@@ -199,8 +215,8 @@ export function DataRow({
 }) {
   return (
     <div className={cn('flex items-baseline justify-between gap-4 py-2.5', className)}>
-      <dt className="shrink-0 text-sm text-steel-500">{label}</dt>
-      <dd className="min-w-0 text-right text-sm font-medium text-steel-900">{value}</dd>
+      <dt className="shrink-0 text-sm text-steel-500 dark:text-steel-400">{label}</dt>
+      <dd className="min-w-0 text-right text-sm font-medium text-steel-900 dark:text-steel-100">{value}</dd>
     </div>
   );
 }

@@ -19,7 +19,7 @@ export function AdminHeader({
       {breadcrumb ? (
         <Link
           href={breadcrumb.href}
-          className="mb-1.5 inline-block text-xs font-medium text-steel-500 hover:text-brand-600"
+          className="mb-1.5 inline-block text-xs font-medium text-steel-500 hover:text-brand-600 dark:text-steel-400 dark:hover:text-brand-400"
         >
           ← {breadcrumb.label}
         </Link>
@@ -28,7 +28,7 @@ export function AdminHeader({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold sm:text-2xl">{title}</h1>
-          {description ? <p className="mt-1 text-sm text-steel-500">{description}</p> : null}
+          {description ? <p className="mt-1 text-sm text-steel-500 dark:text-steel-400">{description}</p> : null}
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}
       </div>
@@ -53,12 +53,17 @@ export function AdminCard({
   padded?: boolean;
 }) {
   return (
-    <section className={cn('overflow-hidden rounded-xl border border-steel-200 bg-white shadow-card', className)}>
+    <section
+      className={cn(
+        'overflow-hidden rounded-xl border border-steel-200 bg-white shadow-card dark:border-steel-800 dark:bg-steel-900',
+        className,
+      )}
+    >
       {title ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-steel-200 px-5 py-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-steel-200 px-5 py-3.5 dark:border-steel-800">
           <div>
-            <h2 className="text-sm font-semibold text-steel-900">{title}</h2>
-            {description ? <p className="mt-0.5 text-xs text-steel-500">{description}</p> : null}
+            <h2 className="text-sm font-semibold text-steel-900 dark:text-steel-100">{title}</h2>
+            {description ? <p className="mt-0.5 text-xs text-steel-500 dark:text-steel-400">{description}</p> : null}
           </div>
           {action ? <div className="shrink-0">{action}</div> : null}
         </div>
@@ -90,7 +95,7 @@ export function Th({
     <th
       scope="col"
       className={cn(
-        'border-b border-steel-200 bg-steel-50 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-steel-500',
+        'border-b border-steel-200 bg-steel-50 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-steel-500 dark:border-steel-800 dark:bg-steel-900 dark:text-steel-400',
         align === 'right' && 'text-right',
         align === 'center' && 'text-center',
         align === 'left' && 'text-left',
@@ -114,7 +119,7 @@ export function Td({
   return (
     <td
       className={cn(
-        'border-b border-steel-100 px-4 py-3 align-middle text-steel-700',
+        'border-b border-steel-100 px-4 py-3 align-middle text-steel-700 dark:border-steel-800 dark:text-steel-300',
         align === 'right' && 'text-right',
         align === 'center' && 'text-center',
         className,
@@ -129,7 +134,7 @@ export function Td({
 export function EmptyRow({ colSpan, message }: { colSpan: number; message: string }) {
   return (
     <tr>
-      <td colSpan={colSpan} className="px-4 py-12 text-center text-sm text-steel-400">
+      <td colSpan={colSpan} className="px-4 py-12 text-center text-sm text-steel-400 dark:text-steel-500">
         {message}
       </td>
     </tr>

@@ -41,10 +41,14 @@ corresponding doc article rather than leaving it silently missing:
 - **Public-facing WhatsApp button** on vehicle pages — customers currently
   reach staff via the enquiry form (which collects a WhatsApp number), not a
   direct "Message us on WhatsApp" link. Affects `whatsapp-enquiries`.
-- **Shipping cost calculator** — `ShippingZone`/`ShippingRate` Prisma models
+- ~~**Shipping cost calculator** — `ShippingZone`/`ShippingRate` Prisma models
   and a migration exist, but there is no admin UI or quote logic built on
   top of them yet. No doc article exists for this — add one (probably under
-  "Pricing & currency") once it's built.
+  "Pricing & currency") once it's built.~~ Built 2026-09-10: `/admin/shipping`
+  (zone + weight-band rate CRUD, `src/lib/shipping.ts` for the matching
+  logic) and a "Shipping quote" panel on the lead detail page
+  (`src/app/admin/leads/[id]/ShippingQuotePanel.tsx`). Doc article added:
+  `shipping-calculator`.
 - **Bulk CSV import/export for vehicles** — not built. Documented honestly
   as not-yet-built in `bulk-import-export` rather than omitted, so nobody
   mistakes silence for "ask someone else."

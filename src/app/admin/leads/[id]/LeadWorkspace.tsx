@@ -35,8 +35,11 @@ const TYPE_ICON: Record<string, React.ReactNode> = {
 
 /**
  * Lead timeline plus the composer for logging contact.
- * `LeadWorkspace.Controls` is the status/assignment panel, colocated because
- * both write to the same lead and share the refresh behaviour.
+ * `LeadControls` (below, in this same file) is the status/assignment panel,
+ * colocated because both write to the same lead and share the refresh
+ * behaviour — exported separately rather than as a static property, since a
+ * property attached to a client component isn't preserved across the
+ * server/client boundary when a server component (this page) imports it.
  */
 export function LeadWorkspace({
   leadId,
@@ -215,7 +218,7 @@ export function LeadWorkspace({
   );
 }
 
-LeadWorkspace.Controls = function LeadControls({
+export function LeadControls({
   leadId,
   status,
   assignedToId,

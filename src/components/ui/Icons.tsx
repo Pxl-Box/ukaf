@@ -341,6 +341,13 @@ export const DocumentIcon = (props: IconProps) => (
   </Icon>
 );
 
+export const PackageIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 3 4 7v10l8 4 8-4V7l-8-4Z" />
+    <path d="M4 7l8 4 8-4M12 11v10" />
+  </Icon>
+);
+
 export const BookIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H12v16H5.5A1.5 1.5 0 0 1 4 18.5v-13Z" />

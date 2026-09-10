@@ -8,9 +8,11 @@ import { getBaseCurrency } from '@/lib/currency';
 import { formatMoney } from '@/lib/money';
 import { formatDateTime, formatMileage } from '@/lib/utils';
 import { buildWhatsAppLink } from '@/lib/whatsapp';
+import { getActiveShippingZones } from '@/lib/shipping';
 import { Badge, DataRow } from '@/components/ui/primitives';
 import { AdminCard, AdminHeader } from '@/components/admin/shell';
-import { LeadWorkspace } from './LeadWorkspace';
+import { LeadControls, LeadWorkspace } from './LeadWorkspace';
+import { ShippingQuotePanel } from './ShippingQuotePanel';
 
 export const metadata: Metadata = {
   title: 'Enquiry',
@@ -27,7 +29,17 @@ export default async function AdminLeadDetailPage({ params }: { params: Promise<
     prisma.lead.findUnique({
       where: { id },
       include: {
-        truck: { select: { id: true, slug: true, title: true, stockNumber: true, priceNet: true, status: true } },
+        truck: {
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            stockNumber: true,
+            priceNet: true,
+            status: true,
+            grossWeightKg: true,
+          },
+        },
         assignedTo: { select: { id: true, firstName: true, lastName: true } },
         user: { select: { id: true, email: true, firstName: true, lastName: true } },
         partExchange: true,
@@ -46,6 +58,8 @@ export default async function AdminLeadDetailPage({ params }: { params: Promise<
   ]);
 
   if (!lead) notFound();
+
+  const shippingZones = lead.truck ? await getActiveShippingZones() : [];
 
   // Other enquiries from the same person, so the rep sees the whole
   // relationship. Matched on WhatsApp number first (always present), and on
@@ -147,7 +161,7 @@ export default async function AdminLeadDetailPage({ params }: { params: Promise<
 
         <div className="space-y-4">
           <AdminCard title="Manage">
-            <LeadWorkspace.Controls
+            <LeadControls
               leadId={lead.id}
               status={lead.status}
               assignedToId={lead.assignedToId ?? ''}
@@ -238,6 +252,23 @@ export default async function AdminLeadDetailPage({ params }: { params: Promise<
                 View listing
               </Link>
             </AdminCard>
+          ) : null}
+
+          {lead.truck ? (
+            <ShippingQuotePanel
+              vehiclePriceNet={lead.truck.priceNet}
+              grossWeightKg={lead.truck.grossWeightKg}
+              zones={shippingZones.map((zone) => ({
+                id: zone.id,
+                name: zone.name,
+                rates: zone.rates.map((rate) => ({
+                  minWeightKg: rate.minWeightKg,
+                  maxWeightKg: rate.maxWeightKg,
+                  priceNet: rate.priceNet,
+                })),
+              }))}
+              currencySymbol={base.symbol}
+            />
           ) : null}
 
           {relatedLeads.length > 0 ? (

@@ -12,6 +12,7 @@ import {
   DashboardIcon,
   DocumentIcon,
   MailIcon,
+  PackageIcon,
   ReceiptIcon,
   SettingsIcon,
   ShieldIcon,
@@ -67,6 +68,7 @@ const SECTIONS: Array<{ title: string; items: NavItem[] }> = [
     items: [
       { href: '/admin/currencies', label: 'Currencies', icon: <CurrencyIcon />, minRole: 'MANAGER' },
       { href: '/admin/discounts', label: 'Discounts', icon: <TagIcon />, minRole: 'MANAGER' },
+      { href: '/admin/shipping', label: 'Shipping calculator', icon: <PackageIcon />, minRole: 'MANAGER' },
       { href: '/admin/pages', label: 'Legal pages', icon: <DocumentIcon />, minRole: 'ADMIN' },
       { href: '/admin/users', label: 'Users & roles', icon: <ShieldIcon />, minRole: 'ADMIN' },
       { href: '/admin/settings', label: 'Settings', icon: <SettingsIcon />, minRole: 'ADMIN' },

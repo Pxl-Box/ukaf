@@ -352,6 +352,26 @@ export const locationSchema = z.object({
   isActive: booleanFromInput,
 });
 
+export const shippingZoneSchema = z.object({
+  name: z.string().trim().min(1, 'Enter a zone name.').max(80),
+  countries: optionalText(300),
+  sortOrder: optionalInt({ min: 0, max: 999 }),
+  isActive: booleanFromInput,
+});
+
+export const shippingRateSchema = z
+  .object({
+    zoneId: z.string().min(1, 'Choose a zone.'),
+    minWeightKg: intFromInput({ min: 0, max: 200_000 }),
+    maxWeightKg: optionalInt({ min: 0, max: 200_000 }),
+    priceNet: moneyInput,
+    sortOrder: optionalInt({ min: 0, max: 999 }),
+  })
+  .refine((value) => value.maxWeightKg === null || value.maxWeightKg > value.minWeightKg, {
+    message: 'The upper weight must be greater than the lower weight.',
+    path: ['maxWeightKg'],
+  });
+
 /** Public listing filters, parsed straight from the query string. */
 export const truckFilterSchema = z.object({
   q: optionalText(120),

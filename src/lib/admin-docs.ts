@@ -193,6 +193,25 @@ export const ADMIN_DOCS: DocArticle[] = [
     ],
   },
   {
+    slug: 'shipping-calculator',
+    section: 'Pricing & currency',
+    title: 'Shipping calculator',
+    summary: 'Set up destination zones and weight-banded rates for fast quoting.',
+    keywords: ['shipping', 'freight', 'export', 'delivery', 'zone', 'weight', 'quote', 'calculator'],
+    blocks: [
+      p('Shipping calculator (Manager role and above) lets you define destination zones — e.g. "Western Europe", "Middle East" — and, within each zone, a set of weight bands with a shipping price for each band.'),
+      steps(
+        'Go to Shipping calculator.',
+        'Add zone — give it a name and, optionally, a free-text note on which countries it covers (for staff reference only, it doesn\'t restrict anything).',
+        'On that zone, Add rate band — set a "from" weight, an "up to" weight (leave blank for the open-ended top band), and the shipping price.',
+        'Repeat for as many bands as the zone needs, covering every weight you expect to sell into that destination.',
+      ),
+      note('info', 'A vehicle\'s shipping cost is looked up automatically by matching its gross weight to the band that contains it, within whichever zone is selected. Make sure your top band in each zone has no upper weight, so nothing falls through uncovered.'),
+      p('Once a zone has rate bands, open any enquiry with a vehicle attached and its detail page shows a "Shipping quote" panel — pick the destination and it shows vehicle price + shipping + total instantly, for fast quoting on a live call.'),
+      note('warning', 'A vehicle needs a gross weight recorded on its listing for this to work — without one, the quote panel has nothing to match against and shows "no weight recorded" instead of a figure.'),
+    ],
+  },
+  {
     slug: 'discounts',
     section: 'Pricing & currency',
     title: 'Discounts',
